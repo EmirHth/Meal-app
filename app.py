@@ -1,10 +1,7 @@
 import requests
 
-def searchRecipes(query=None, cuisine=None, diet=None, intolerances=None, 
-                 includeIngredients=None, excludeIngredients=None, type=None,
-                 maxReadyTime=None, minServings=None, maxServings=None,
-                 maxCalories=None, minProtein=None, maxFat=None,
-                 number=10, offset=0, api_key=None):
+def searchRecipes(query=None, cuisine=None, diet=None, maxReadyTime=None, 
+                 maxCalories=None, number=10, api_key=None):
     """
     Search through thousands of recipes using advanced filtering and ranking.
     
@@ -12,65 +9,41 @@ def searchRecipes(query=None, cuisine=None, diet=None, intolerances=None,
         query (str): The (natural language) recipe search query
         cuisine (str): The cuisine(s) of the recipes (comma separated)
         diet (str): The diet(s) for which the recipes must be suitable
-        intolerances (str): A comma-separated list of intolerances
-        includeIngredients (str): Comma-separated list of ingredients that should be used
-        excludeIngredients (str): Comma-separated list of ingredients to exclude
-        type (str): The type of recipe (e.g., main course, dessert)
         maxReadyTime (int): Maximum time in minutes to prepare and cook
-        minServings (int): Minimum amount of servings
-        maxServings (int): Maximum amount of servings
         maxCalories (int): Maximum calories per serving
-        minProtein (int): Minimum protein in grams per serving
-        maxFat (int): Maximum fat in grams per serving
         number (int): Number of expected results (1-100, default 10)
-        offset (int): Number of results to skip (0-900, default 0)
         api_key (str): Spoonacular API key
     
     Returns:
         dict: Recipe search results or error message
     """
-    # Define the API endpoint
-    api_url = "https://api.spoonacular.com/recipes/complexSearch"
+    # Build the API URL with f-string formatting
+    api_url = (
+        f"https://api.spoonacular.com/recipes/complexSearch"
+        f"?apiKey={api_key}&number={number}"
+    )
     
-    # Build parameters dictionary
-    params = {
-        "number": number,
-        "offset": offset
-    }
+    # Build additional parameters
+    params = []
     
-    # Add optional parameters if provided
     if query:
-        params["query"] = query
+        params.append(f"query={query}")
     if cuisine:
-        params["cuisine"] = cuisine
+        params.append(f"cuisine={cuisine}")
     if diet:
-        params["diet"] = diet
-    if intolerances:
-        params["intolerances"] = intolerances
-    if includeIngredients:
-        params["includeIngredients"] = includeIngredients
-    if excludeIngredients:
-        params["excludeIngredients"] = excludeIngredients
-    if type:
-        params["type"] = type
+        params.append(f"diet={diet}")
     if maxReadyTime:
-        params["maxReadyTime"] = maxReadyTime
-    if minServings:
-        params["minServings"] = minServings
-    if maxServings:
-        params["maxServings"] = maxServings
+        params.append(f"maxReadyTime={maxReadyTime}")
     if maxCalories:
-        params["maxCalories"] = maxCalories
-    if minProtein:
-        params["minProtein"] = minProtein
-    if maxFat:
-        params["maxFat"] = maxFat
-    if api_key:
-        params["apiKey"] = api_key
+        params.append(f"maxCalories={maxCalories}")
+    
+    # Add additional parameters to URL
+    if params:
+        api_url += "&" + "&".join(params)
     
     try:
         # Make the API request
-        response = requests.get(api_url, params=params)
+        response = requests.get(api_url)
         
         # Check if the request was successful
         if response.status_code == 200:
